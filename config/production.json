@@ -1,0 +1,12 @@
+{
+    "production":
+    {
+        "db":"mongodb://localhost:27017/popcorn",
+        "httpServer":
+        {
+            "port": 8080,
+            "timeout":500,
+            "maxConnections":1000
+        }
+    }
+}
