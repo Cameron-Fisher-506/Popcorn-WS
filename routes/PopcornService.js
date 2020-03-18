@@ -6,6 +6,9 @@ const Client = require('node-torrent');
 const convertBytesToMegaBytes = require('../utils/GeneralUtils').convertBytesToMegaBytes;
 const convertBytesToKiloBytes = require('../utils/GeneralUtils').convertBytesToKiloBytes;
 const getServerSettingValueByName = require("../utils/GeneralUtils").getServerSettingValueByName;
+const parseTorrent = require('parse-torrent');
+const WebTorrent = require('webtorrent');
+
 
 
 
@@ -88,14 +91,18 @@ router.get("/cacheMovies/:totalPages", async (req, res) => {
             "\nPage: " + page +
             "\ndateTime: " + getCurrentDateTime());
                 
+            res.status(500).send(error.message);
         }
         page++;
     }while(page < totalPages);
 
+    res.status(200).send("Caching Movies...");
 });
 
 router.get("/getAllMovies", async (req, res) =>{
     let toReturn = [];
+
+    console.log("Called");
     
     let movies = await Movie.find();
     if(!movies)
@@ -124,36 +131,16 @@ router.get("/getAllMovies", async (req, res) =>{
 
 router.post("/download", async (req, res) =>{
 
+
+    let toReturn = {};
     //console.log(getServerSettingValueByName("torrent_download_path"));
     let torrentURL = req.body.torrentURL;
 
-    const parseTorrent = require('parse-torrent')
-    const fs = require('fs')
-   
-    let uri = parseTorrent.toMagnetURI({
+    let magnetUri = parseTorrent.toMagnetURI({
         infoHash: torrentURL
       });
-
-      console.log(uri);
     
-    /*let client = new Client({logLevel: 'DEBUG'});
-    let torrent = client.addTorrent(uri);
-
-    torrent.on('complete', function() {
-        console.log('complete!');
-        torrent.files.forEach(function(file) {
-            var newPath = 'F:\\' + file.path;
-            fs.rename(file.path, newPath);
-            // while still seeding need to make sure file.path points to the right place
-            file.path = newPath;
-        });
-    });*/
-
-    /*var WebTorrent = require('webtorrent')
- 
-    var client = new WebTorrent();
-    var magnetUri = uri;
-
+    let client = new WebTorrent();
     client.add(magnetUri, { path: 'f:\\' }, function (torrent) {
         torrent.on('done', function () {
           console.log('torrent download finished')
@@ -166,10 +153,13 @@ router.post("/download", async (req, res) =>{
 
           });
 
-      });*/
+      });
     
+    toReturn.status = 0;
+    toReturn.title = "Download Started";
+    toReturn.message = "The movie ready shortly.";
 
-    res.status(200).send("Download...");
+    res.status(200).send(toReturn);
 
 });
 
